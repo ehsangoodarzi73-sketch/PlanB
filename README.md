@@ -1,20 +1,15 @@
-# PlanB - Daytona Proxy
+# PlanB - Universal HTTP to HTTPS Proxy
 
-HTTP to HTTPS proxy for Daytona sandbox environments.
+Universal proxy for Daytona sandbox environments.
 
-## Endpoints
+## Health Check
+```
+GET /health
+```
 
-| Proxy Path | Target |
-|------------|--------|
-| `/telegram/*` | api.telegram.org |
-| `/openai/*` | api.openai.com |
-| `/github/*` | api.github.com |
-| `/huggingface/*` | huggingface.co |
-| `/health` | Health check |
-
-## Usage from Daytona
-
+## Usage
 ```bash
-export PROXY_URL=https://planb.up.railway.app
-curl $PROXY_URL/telegram/bot<TOKEN>/getMe
+# Set proxy
+export HTTP_PROXY=http://planb-production-2dff.up.railway.app
+export HTTPS_PROXY=http://planb-production-2dff.up.railway.app
 ```

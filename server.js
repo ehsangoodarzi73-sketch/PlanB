@@ -3,43 +3,30 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
-// Telegram API
-app.use('/telegram', createProxyMiddleware({
-  target: 'https://api.telegram.org',
+// Universal HTTP Proxy — همه ترافیک رو فوروارد میکنه
+app.use('/', createProxyMiddleware({
+  target: 'http://placeholder', // تغییر نمیکنه
   changeOrigin: true,
-  pathRewrite: { '^/telegram': '' },
-  onProxyRes: (proxyRes) => {
-    proxyRes.headers['access-control-allow-origin'] = '*';
-  }
-}));
-
-// OpenAI API
-app.use('/openai', createProxyMiddleware({
-  target: 'https://api.openai.com',
-  changeOrigin: true,
-  pathRewrite: { '^/openai': '' },
-  onProxyRes: (proxyRes) => {
-    proxyRes.headers['access-control-allow-origin'] = '*';
-  }
-}));
-
-// GitHub API
-app.use('/github', createProxyMiddleware({
-  target: 'https://api.github.com',
-  changeOrigin: true,
-  pathRewrite: { '^/github': '' },
-  onProxyRes: (proxyRes) => {
-    proxyRes.headers['access-control-allow-origin'] = '*';
-  }
-}));
-
-// HuggingFace API
-app.use('/huggingface', createProxyMiddleware({
-  target: 'https://huggingface.co',
-  changeOrigin: true,
-  pathRewrite: { '^/huggingface': '' },
-  onProxyRes: (proxyRes) => {
-    proxyRes.headers['access-control-allow-origin'] = '*';
+  router: (req) => {
+    // هاست مورد نظر از هدر خوانده میشه
+    const target = req.headers['x-target-host'] || req.query.target;
+    if (target) {
+      return `https://${target}`;
+    }
+    return 'https://httpbin.org'; // fallback
+  },
+  on: {
+    proxyReq: (proxyReq, req) => {
+      // اگه x-target-host هست، هاست اصلی رو بذار
+      const targetHost = req.headers['x-target-host'];
+      if (targetHost) {
+        proxyReq.setHeader('host', targetHost);
+      }
+    },
+    proxyRes: (proxyRes) => {
+      proxyRes.headers['access-control-allow-origin'] = '*';
+      proxyRes.headers['access-control-allow-headers'] = '*';
+    }
   }
 }));
 
@@ -50,5 +37,5 @@ app.get('/health', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Proxy running on port ${PORT}`);
+  console.log(`Universal Proxy running on port ${PORT}`);
 });
